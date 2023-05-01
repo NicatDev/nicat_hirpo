@@ -1,6 +1,4 @@
-# Python cache files
-__pycache__/
-*.py[cod]
+
 
 # Virtual environment
 myenv/
@@ -15,5 +13,5 @@ db.sqlite3
 
 # DRF files
 media/
-static/
+
 

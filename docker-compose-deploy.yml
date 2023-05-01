@@ -1,16 +1,12 @@
 version: '3.9'
 
 services:
-  app:
+  core: 
     build:
       context: .
-    ports:
-      - 8000:8000
-    volumes:
-      - ./nicat_hirpo:/core
+      restart: always
     environment:
-      - SECRET_KEY=django-insecure-ft4e7k4z@@-0@vg&g_&8tps#8=px8-d22vx4vz-arz&#w==-le
-      - DEBUG=1
+      - SQLITE3_DB=db.sqlite3
     depends_on:
       - db
   db:

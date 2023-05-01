@@ -1,11 +1,19 @@
-FROM python:3.10.8-alpine
+FROM python:3.9-alpine3.13
+LABEL maintainer="londonappdeveloper.com"
 
-WORKDIR /app
+ENV PYTHONUNBUFFERED 1
 
-COPY requirements.txt requirements.txt
+COPY ./requirements.txt /requirements.txt
+COPY ./core /core
 
-RUN pip install -r requirements.txt
+WORKDIR /core
+EXPOSE 8000
 
-COPY . .
+RUN python -m venv /py && \
+    /py/bin/pip install --upgrade pip && \
+    /py/bin/pip install -r /requirements.txt && \
+    adduser --disabled-password --no-create-home core
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000", "--noreload"]
+ENV PATH="/py/bin:$PATH"
+
+USER core
