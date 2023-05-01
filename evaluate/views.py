@@ -4,7 +4,6 @@ from wizard.api.serializers import *
 from rest_framework.response import Response
 import os
 
-import openpyxl
 from wizard.models import *
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
