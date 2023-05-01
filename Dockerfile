@@ -1,19 +1,10 @@
-FROM python:3.9-alpine3.13
-LABEL maintainer="londonappdeveloper.com"
 
+FROM python:3.7
 ENV PYTHONUNBUFFERED 1
-
-COPY ./requirements.txt /requirements.txt
-COPY ./core /core
-
-WORKDIR /core
-EXPOSE 8000
-
-RUN python -m venv /py && \
-    /py/bin/pip install --upgrade pip && \
-    /py/bin/pip install -r /requirements.txt && \
-    adduser --disabled-password --no-create-home core
-
-ENV PATH="/py/bin:$PATH"
-
-USER core
+ENV DEBUG False
+COPY requirements.txt /code/requirements.txt
+WORKDIR /code
+RUN pip install -r requirements.txt
+ADD . .
+# RUN python manage.py collectstatic --noinput
+CMD [ "gunicorn", "--bind", "0.0.0.0", "-p", "8000",  "core.wsgi" ]
