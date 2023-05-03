@@ -5,7 +5,7 @@ services:
     image: jwilder/nginx-proxy
     restart: "always"
     ports:
-      - "8080:8080"
+      - "80:80"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./nginx/vhost/:/etc/nginx/vhost.d:ro
@@ -33,7 +33,7 @@ services:
     volumes:
       - .:/code
     ports:
-      - "80:80"
+      - "8000:8000"
     # links:
     #   - postgres
     depends_on:
