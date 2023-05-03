@@ -185,12 +185,18 @@ class OneTimeView(APIView):
         df.rename(columns={'Name of competency': 'skill'}, inplace=True)
         df.rename(columns={'Type (soft ot hard skills)': 'skilltype'}, inplace=True)
         df.rename(columns={'Position level': 'position'}, inplace=True)
-
+        
         data = df.to_dict(orient='records')
+        if data == []:
+            print(data)
+            return Response({"message":"not success data"},status=400)
+        
         user = self.request.user.id
         
         if user:
             project=Project.objects.get(companyLeader=user)
+        else:
+            return Response(status=403)
 
         departments = ProjectDepartment.objects.filter(project=project)
         number = 0
