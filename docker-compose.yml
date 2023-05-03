@@ -5,7 +5,7 @@ services:
     image: jwilder/nginx-proxy
     restart: "always"
     ports:
-      - "70:70"
+      - "80:80"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./nginx/vhost/:/etc/nginx/vhost.d:ro
@@ -15,7 +15,7 @@ services:
       - ./nginx/proxy.conf/:/etc/nginx/proxy.conf
 
   postgres:
-    container_name:  postgres-db-hirpo
+    container_name:  postgres-db-tenter
     image:           postgres:9.6.6
     ports:
       - 5432:5432
@@ -26,7 +26,7 @@ services:
       - LC_ALL=C.UTF-8
 
   web:
-    container_name: hirpo
+    container_name: tenter
     build: .
     restart: "always"
     env_file: ./.env
