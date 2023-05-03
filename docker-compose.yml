@@ -33,7 +33,7 @@ services:
     volumes:
       - .:/code
     ports:
-      - "8000:8000"
+      - "80:80"
     # links:
     #   - postgres
     depends_on:
