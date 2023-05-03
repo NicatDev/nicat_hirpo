@@ -8,9 +8,11 @@ class Activationcode(models.Model):
     user = models.ForeignKey(MyUser,on_delete=models.CASCADE,related_name='code')
     activation_code = models.CharField(max_length=40,null=True,blank=True)
     
+class ExcellFile(models.Model):
+    ecx = models.FileField(upload_to='/files')
 
-
-
+    def __str__(self):
+        return 'file'
 # class MyUserManager(BaseUserManager):
 #     def create_user(self,email,password=None,is_active=True,is_staff=False,is_superuser=False):
 #         if not email:
