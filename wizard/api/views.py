@@ -178,7 +178,7 @@ class OneTimeView(APIView):
 
     def post(self,*args,**kwargs):
 
-        df = pd.read_excel('requiredfiles/Hirpolist.xlsx',usecols=['Department (eng)','Name of competency','Level (1-5)','Type (soft ot hard skills)','Position level'])
+        df = pd.read_excel('static/Hirpolist.xlsx',usecols=['Department (eng)','Name of competency','Level (1-5)','Type (soft ot hard skills)','Position level'])
         df.fillna('null', inplace=True)
         df.rename(columns={'Level (1-5)': 'norm'}, inplace=True)
         df.rename(columns={'Department (eng)': 'department'}, inplace=True)
