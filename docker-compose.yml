@@ -5,7 +5,7 @@ services:
     image: jwilder/nginx-proxy
     restart: "always"
     ports:
-      - "80:80"
+      - "8080:8080"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./nginx/vhost/:/etc/nginx/vhost.d:ro
