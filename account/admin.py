@@ -9,4 +9,3 @@ from django.urls import path
 
 User = get_user_model()
 admin.site.register(Activationcode)
-admin.site.register(ExcellFile)
