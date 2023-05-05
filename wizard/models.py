@@ -188,21 +188,21 @@ class Employee(models.Model):
                     total_weight += x.skill.weight
                     if y.employee.report_to == y.rater.report_to:
                         cowerker.append((x.price/x.skill.norm*100))
-                        cowerkerw.append((x.price/x.skill.norm*x.skill.weight))
+                        cowerkerw.append((x.price/x.skill.norm*x.skill.weight*100))
                     elif y.employee.report_to == y.rater:
                         manager.append((x.price/x.skill.norm*100))
-                        managerw.append((x.price/x.skill.norm*x.skill.weight))
+                        managerw.append((x.price/x.skill.norm*x.skill.weight*100))
                     elif y.employee == y.rater.report_to:
                         sub.append((x.price/x.skill.norm*100))
-                        subw.append((x.price/x.skill.norm*x.skill.weight))
+                        subw.append((x.price/x.skill.norm*x.skill.weight*100))
                     elif y.employee == y.rater:
                         selfscore.append((x.price/x.skill.norm*100))
-                        selfscorew.append((x.price/x.skill.norm*x.skill.weight))
+                        selfscorew.append((x.price/x.skill.norm*x.skill.weight*100))
                     else:
                         pass
                 except:
                     pass
-    
+        print(managerw,subw,selfscorew,cowerkerw)
         result = {}
         if len(cowerker)>0:
             result['cowerker'] = int(sum(cowerker)/len(cowerker))
@@ -220,6 +220,19 @@ class Employee(models.Model):
             result['manager'] = int(sum(manager)/len(manager))
         else:
             result['manager'] = 100
+        for x in range(len(cowerkerw)):
+            if cowerkerw[x]>100:
+                cowerkerw[x]=100
+        for x in range(len(subw)):
+            if cowerkerw[x]>100:
+                cowerkerw[x]=100
+        for x in range(len(selfscorew)):
+            if cowerkerw[x]>100:
+                cowerkerw[x]=100
+        for x in range(len(managerw)):
+            if cowerkerw[x]>100:
+                cowerkerw[x]=100
+        
         if len(cowerkerw)==0:
             cowerkerw = [100]
         if len(selfscorew)==0:
@@ -228,10 +241,11 @@ class Employee(models.Model):
             subw = [100]
         if len(managerw)==0:
             managerw = [100]
-                        
+        
+        print(sum(cowerkerw),sum(managerw),sum(subw),sum(selfscorew))
             
-        result['total2'] = int(0.3*sum(cowerkerw) + 0.1*sum(selfscorew) + 0.2*sum(subw) + 0.4*sum(managerw))
-        # result['total'] = result['cowerker']*0.3+result['selfscore']*0.1+result['sub']*0.2+result['manager']*0.4
+        #result['total2'] = int(0.3*sum(cowerkerw) + 0.1*sum(selfscorew) + 0.2*sum(subw) + 0.4*sum(managerw))
+        result['total2'] = result['cowerker']*0.3+result['selfscore']*0.1+result['sub']*0.2+result['manager']*0.4
     
         return result
     

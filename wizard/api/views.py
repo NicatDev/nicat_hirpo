@@ -10,7 +10,7 @@ from rest_framework import status
 from django.contrib.auth.views import LogoutView
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+from account.api.permissions import IsCompanyLead
 
 #employee goal list
 class UserListView(generics.ListAPIView):
@@ -18,7 +18,8 @@ class UserListView(generics.ListAPIView):
     serializer_class = EmployeesallSerializer
     
 
-class CreateProjectView(APIView):     
+class CreateProjectView(APIView):
+    permission_classes = [IsCompanyLead]     
     def post(self,request,format=None):
         for pr in request.user.project.all():
             pr.delete()
@@ -31,6 +32,10 @@ class CreateProjectView(APIView):
         if project_serializer.is_valid(raise_exception=True):
             project = project_serializer.save()
             print("project")
+            user = request.user
+            jjj = Employee.objects.get(user = user.id)
+            jjj.project = project
+            jjj.save()
             
             for item in list(object_data.keys()):
                 name=str(item)
@@ -152,6 +157,17 @@ class project_delete(APIView):
             project.delete()
         return Response({"message":"success"})
     
+class AddjsonView(APIView):
+    
+    def post(self,request):
+        data = request.data
+        for x in data:
+            serializer =  HirponormsSerializer(data=x)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+        return Response({'message':'success'})
+        
+        
 #excellden sqle
 class OneTimeVieww(APIView):
     
@@ -177,20 +193,20 @@ class OneTimeVieww(APIView):
 class OneTimeView(APIView):
 
     def post(self,*args,**kwargs):
-
-        df = pd.read_excel('Hirpolist.xlsx',usecols=['Department (eng)','Name of competency','Level (1-5)','Type (soft ot hard skills)','Position level'])
-        df.fillna('null', inplace=True)
-        df.rename(columns={'Level (1-5)': 'norm'}, inplace=True)
-        df.rename(columns={'Department (eng)': 'department'}, inplace=True)
-        df.rename(columns={'Name of competency': 'skill'}, inplace=True)
-        df.rename(columns={'Type (soft ot hard skills)': 'skilltype'}, inplace=True)
-        df.rename(columns={'Position level': 'position'}, inplace=True)
-        
-        data = df.to_dict(orient='records')
-       
+        print('first_stage')
+        # df = pd.read_excel('Hirpolist.xlsx',usecols=['Department (eng)','Name of competency','Level (1-5)','Type (soft ot hard skills)','Position level'])
+        # df.fillna('null', inplace=True)
+        # df.rename(columns={'Level (1-5)': 'norm'}, inplace=True)
+        # df.rename(columns={'Department (eng)': 'department'}, inplace=True)
+        # df.rename(columns={'Name of competency': 'skill'}, inplace=True)
+        # df.rename(columns={'Type (soft ot hard skills)': 'skilltype'}, inplace=True)
+        # df.rename(columns={'Position level': 'position'}, inplace=True)
+        # print('datagettingstage')
+        # data = df.to_dict(orient='records')
+        data = Hirponorms.objects.all()
         
         user = self.request.user.id
-        
+        print('usergettingstage',user)
         if user:
             project=Project.objects.get(companyLeader=user)
 
@@ -198,55 +214,48 @@ class OneTimeView(APIView):
         departments = ProjectDepartment.objects.filter(project=project)
         number = 0
 
-        for y in data:
-            if y['position'] == 'Top management':
-                y['position'] = 'Top manager'
-
-            elif y['position'] == 'Senior specialist':
-                y['position'] = 'Senior Specialist'
-
-            elif y['position'] == 'Junior-Assistant':
-                y['position'] = 'Junior'
+    
         
         for x in departments:
             positions = DepartmentPosition.objects.filter(department=x.id)
             for item in data:
+           
                 for position in positions:
-                    if item['position']==position.name and item['department']==position.department.name:
-                        skill = SkillSerializer(data={'name':item['skill'],'position':position.id,'norm':item['norm'],'skilltype':item['skilltype']})               
+                    if item.position==position.name and item.department==position.department.name:
+                        skill = SkillSerializer(data={'name':item.skill,'position':position.id,'norm':item.norm,'skilltype':item.skilltype})               
                         skill.is_valid(raise_exception=True)
                         skill.save()                       
                         number +=1
         poswe = {}                
         for x in MainSkill.objects.all():
-            if x.position.name+'-'+x.position.department.name+'-'+x.skilltype in poswe:
-                poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype] = poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype]+1
+            if x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype in poswe:
+                poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype] = poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]+1
             else:
-                poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype] = 1
+                poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype] = 1
                 
         for x in MainSkill.objects.all():
             
             if x.skilltype == 'Soft' and x.position.name == 'Junior':
-                x.weight = 25/poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype]
+                x.weight = 25/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
 
             elif x.skilltype == 'Hard' and x.position.name == 'Junior':
-                x.weight = 75/poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype]
+                x.weight = 75/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             if x.skilltype == 'Soft' and x.position.name == 'Specialist':
-                x.weight = 40/poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype]
+                x.weight = 40/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             elif x.skilltype == 'Hard' and x.position.name == 'Specialist':
-                x.weight = 60/poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype]
+                x.weight = 60/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             if x.skilltype == 'Soft' and x.position.name == 'Senior Specialist':
-                x.weight = 50/poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype]
+                x.weight = 50/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             elif x.skilltype == 'Hard' and x.position.name == 'Senior Specialist':
-                x.weight = 50/poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype]
+                x.weight = 50/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             if x.skilltype == 'Soft' and x.position.name == 'Manager':
-                x.weight = 40/poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype]
+                x.weight = 40/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             elif x.skilltype == 'Hard' and x.position.name == 'Manager':
-                x.weight = 60/poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype]
+                x.weight = 60/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             if x.skilltype == 'Soft' and x.position.name == 'Top Manager':
-                x.weight = 25/poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype]
+                x.weight = 25/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             elif x.skilltype == 'Hard' and x.position.name == 'Top Manager':
-                x.weight = 75/poswe[x.position.name+'-'+x.position.department.name+'-'+x.skilltype]               
+                x.weight = 75/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]               
             x.save()
                 
         return Response({"success":number})
@@ -347,7 +356,7 @@ class LogoutAPIView(APIView):
         logout_view = LogoutView.as_view()
         response = logout_view(request)
 
-        return Response({'message': 'Logged out successfully'})
+        return Response({'message': 'Logged out successfully'},status=200)
 
        
 class AddUser(APIView):
@@ -468,10 +477,13 @@ class ChangePPView(APIView):
             return Response(image_serializer.errors)
         
 class HomePageView(generics.ListAPIView):
-    permission_classes = [IsCompanyLead]
+   
     serializer_class = HomePageSerializer
     
     def get_queryset(self):
-        instance = Project.objects.filter(companyLeader = self.request.user.id)
-      
+        if self.request.user.employee.is_systemadmin == True:
+             
+            instance = Project.objects.filter(companyLeader = self.request.user.id)
+        else:
+            instance = [self.request.user.employee.project]
         return instance
