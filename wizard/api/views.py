@@ -33,9 +33,7 @@ class CreateProjectView(APIView):
             project = project_serializer.save()
             print("project")
             user = request.user
-            jjj = Employee.objects.get(user = user.id)
-            jjj.project = project
-            jjj.save()
+       
             
             for item in list(object_data.keys()):
                 name=str(item)
