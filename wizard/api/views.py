@@ -301,7 +301,7 @@ class ExcellUploadView(generics.ListAPIView):
             return queryset.filter(project=project)   
         
 class WizardComptencySaveView(APIView):
-    permission_classes = [IsCompanyLead]
+
     def post(self,request):
         data = request.data
         
