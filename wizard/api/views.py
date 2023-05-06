@@ -19,7 +19,7 @@ class UserListView(generics.ListAPIView):
     
 
 class CreateProjectView(APIView):
-    permission_classes = [IsCompanyLead]     
+
     def post(self,request,format=None):
         for pr in request.user.project.all():
             pr.delete()
