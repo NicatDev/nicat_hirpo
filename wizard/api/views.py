@@ -315,8 +315,10 @@ class WizardComptencySaveView(APIView):
         for comptency in data.get('editedNorms'):
             comp = MainSkill.objects.get(id=comptency['id'])
             serializer = SkillNormUpdateSerializer(comp,data={'norm':comptency['norm']})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return Response(status=400)
 
         for comptency in data.get('removedNorms'):
             myobj = MainSkill.objects.get(id=comptency)
