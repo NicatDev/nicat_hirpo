@@ -102,11 +102,12 @@ class AllScoresForEvaluateSerializer(serializers.ModelSerializer):
         total_weight = 0
         score,total_score,score_number = 0,0,0
         for x in obj.comptency.all():
-            total_weight += x.skill.weight
-            if x.price:
-                print(x.price,x.skill.norm)
-                score += x.price/x.skill.norm
-                score_number += 1
+            if x.skill.weight != None:
+                total_weight += x.skill.weight
+                if x.price:
+                    print(x.price,x.skill.norm)
+                    score += x.price/x.skill.norm
+                    score_number += 1
         if score_number > 0:
             total_score = score/score_number
         else:

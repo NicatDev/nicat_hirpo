@@ -23,7 +23,7 @@ class CreateProjectView(APIView):
     def post(self,request,format=None):
         for pr in request.user.project.all():
             pr.delete()
-            
+     
         object_data = request.data.pop('inputValues')
         data=request.data
         data['companyLeader']=request.user.id
@@ -33,7 +33,7 @@ class CreateProjectView(APIView):
             project = project_serializer.save()
             print("project")
             user = request.user
-       
+            
             
             for item in list(object_data.keys()):
                 name=str(item)
@@ -285,7 +285,8 @@ from account.api.permissions import IsCompanyLead
 #wizardda comptency list view yaratmadan evvel       
 class ExcellUploadView(generics.ListAPIView):
     serializer_class = SimpleProjectDepartmentSerializer
-    permission_classes = [IsCompanyLead]
+
+    
     def get_queryset(self):
         queryset = ProjectDepartment.objects.all()
         data=self.request.user.id
@@ -481,9 +482,12 @@ class HomePageView(generics.ListAPIView):
     serializer_class = HomePageSerializer
     
     def get_queryset(self):
-        if self.request.user.employee.is_systemadmin == True:
+        instance = []
+        empexs = Employee.objects.filter(user = self.request.user).exists()
+        if empexs:
+            instance = [self.request.user.employee.project]
+        else:
              
             instance = Project.objects.filter(companyLeader = self.request.user.id)
-        else:
-            instance = [self.request.user.employee.project]
+           
         return instance
