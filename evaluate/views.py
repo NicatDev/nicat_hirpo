@@ -22,7 +22,10 @@ class ProjectsApiView(generics.ListAPIView):
     def get_queryset(self):
         data=self.request.user.id
         if data:
-            project=Project.objects.filter(companyLeader=data)
+            if Project.objects.filter(companyLeader=data).exists():
+                project=Project.objects.filter(companyLeader=data)
+            else:
+                project = Project.objects.filter(employee = self.request.user.employee.id)
             return project
         
 class Frequencies(generics.ListAPIView):
@@ -33,10 +36,15 @@ class Frequencies(generics.ListAPIView):
     def get_queryset(self):
         queryset = Evaluation_frequency.objects.all()
         data=self.request.user.id
-
+ 
         if data:
-            project=Project.objects.get(companyLeader=data)
-            return queryset.filter(period__project_id = project.id)
+            if Project.objects.filter(companyLeader=data).exists():
+                project_id=Project.objects.get(companyLeader=data).id
+             
+            else:
+                project_id = Project.objects.get(employee = self.request.user.employee.id).id
+       
+            return queryset.filter(period__project_id = project_id)
         
 class AddPeriodApiView(generics.CreateAPIView):
     queryset = Period.objects.all()
@@ -74,13 +82,18 @@ class EvaluationList(generics.ListAPIView):
     serializer_class = AllScoressSerializer
 
     def get_queryset(self):
-        
-        queryset = AllScores.objects.filter(rater = self.request.user.employee.id)
+        queryset = []
+        existt = Employee.objects.filter(user = self.request.user).exists()
+        print(existt)
+        if existt:
+            queryset = AllScores.objects.filter(rater = self.request.user.employee.id)
+            print(queryset)
         for x in queryset:
             if x.evaluation_frequency.start_date <= today <= x.evaluation_frequency.end_date:
                 pass
             else:
                 queryset=queryset.exclude(id=x.id)
+        print(queryset)
         return queryset
                 
             
@@ -122,7 +135,11 @@ class EmployeePerformance(generics.ListAPIView):
     serializer_class = EmployeeSerializerForUserPerformance
     
     def get_queryset(self):
-        instance = Employee.objects.filter(project__companyLeader = self.request.user.id)
+        if Employee.objects.filter(project__companyLeader = self.request.user.id).exists():
+            
+            instance = Employee.objects.filter(project__companyLeader = self.request.user.id)
+        else:
+            instance = Employee.objects.filter(project = self.request.user.employee.project.id)
         return instance
 
 

@@ -204,6 +204,7 @@ class Employee(models.Model):
                     pass
         print(managerw,subw,selfscorew,cowerkerw)
         result = {}
+        print(cowerkerw)
         if len(cowerker)>0:
             result['cowerker'] = int(sum(cowerker)/len(cowerker))
         else:
@@ -220,18 +221,19 @@ class Employee(models.Model):
             result['manager'] = int(sum(manager)/len(manager))
         else:
             result['manager'] = 100
+        
         for x in range(len(cowerkerw)):
             if cowerkerw[x]>100:
                 cowerkerw[x]=100
         for x in range(len(subw)):
-            if cowerkerw[x]>100:
-                cowerkerw[x]=100
+            if subw[x]>100:
+                subw[x]=100
         for x in range(len(selfscorew)):
-            if cowerkerw[x]>100:
-                cowerkerw[x]=100
+            if selfscorew[x]>100:
+                selfscorew[x]=100
         for x in range(len(managerw)):
-            if cowerkerw[x]>100:
-                cowerkerw[x]=100
+            if managerw[x]>100:
+                managerw[x]=100
         
         if len(cowerkerw)==0:
             cowerkerw = [100]
