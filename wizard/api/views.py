@@ -482,7 +482,7 @@ class HomePageView(generics.ListAPIView):
     serializer_class = HomePageSerializer
     
     def get_queryset(self):
-        instance = []
+        instance = 1
         empexs = Employee.objects.filter(user = self.request.user).exists()
         
         if empexs:
