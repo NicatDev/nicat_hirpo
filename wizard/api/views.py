@@ -361,10 +361,13 @@ class LogoutAPIView(APIView):
 
        
 class AddUser(APIView):
-    permission_classes = [IsCompanyLead]
+    # permission_classes = [IsCompanyLead]
     def post(self,request):
         emp = request.data
-        project = Project.objects.get(companyLeader=request.user.id)
+        if Project.objects.filter(companyLeader=request.user.id).exists():
+            project = Project.objects.get(companyLeader=request.user.id)
+        else:
+            project = Project.objects.get(companyLeader=request.user.employee.project.companyLeader.id)
 
         print(emp,'22222222222222222222222222222',request.user.id)
         if project:
@@ -373,7 +376,9 @@ class AddUser(APIView):
             'password':emp.get('password'),
             'email':emp.get('email')
             }
+            print(data, 'look at password')
             serializer = UserForEmployeeSerializer(data=data)
+
             serializer.is_valid(raise_exception=True)
             user = serializer.save()
             
@@ -394,17 +399,20 @@ class AddUser(APIView):
             return Response({"message":"success"})
             
 class EmployeeListView(generics.ListAPIView):
-    permission_classes = [IsCompanyLead]
+    # permission_classes = [IsCompanyLead]
     serializer_class = EmployeeForListSerializer
     
     def get_queryset(self):
-        queryset = Employee.objects.all()
-        data=self.request.user.id
-        
-        return queryset.filter(project__companyLeader=data)
+        queryset = []
+        data=self.request.user
+        if Employee.objects.filter(project__companyLeader=data.id).exists():
+            queryset = Employee.objects.filter(project__companyLeader=data)
+        else:
+            queryset = Employee.objects.filter(project = data.employee.project.id)
+        return queryset
     
 class EmployeeSingleView(generics.RetrieveAPIView):
-    permission_classes = [IsCompanyLead]
+    # permission_classes = [IsCompanyLead]
     queryset = Employee.objects.all()
     serializer_class = EmployeeForUserListPageSerializer
     lookup_field = 'id'
@@ -422,12 +430,15 @@ class EmployeePageView(APIView):
     
     
 class PositionSelect(generics.ListAPIView):
-    permission_classes = [IsCompanyLead]
+    # permission_classes = [IsCompanyLead]
     serializer_class = DepartmentPositionSerializer
     
     def get_queryset(self):
-        user=self.request.user.id
-        queryset = DepartmentPosition.objects.filter(department__project__companyLeader_id = user)
+        user=self.request.user
+        if DepartmentPosition.objects.filter(department__project__companyLeader_id = user).exists():
+            queryset = DepartmentPosition.objects.filter(department__project__companyLeader_id = user.id)
+        else:
+            queryset = DepartmentPosition.objects.filter(department__project__companyLeader_id = user.employee.project.companyLeader.id)
         return queryset
             
 
@@ -465,7 +476,7 @@ class ChangePPView(APIView):
 
         data = request.data
         employee_id = data.get('data')
-
+        print(employee_id)
         image = request.FILES.get('file')
         employee = Employee.objects.get(id = employee_id)
 

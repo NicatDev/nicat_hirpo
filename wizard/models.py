@@ -186,18 +186,18 @@ class Employee(models.Model):
             for x in y.comptency.all():
                 try:
                     total_weight += x.skill.weight
-                    if y.employee.report_to == y.rater.report_to:
-                        cowerker.append((x.price/x.skill.norm*100))
-                        cowerkerw.append((x.price/x.skill.norm*x.skill.weight*100))
+                    if y.employee == y.rater:
+                        selfscore.append((x.price/x.skill.norm*100))
+                        selfscorew.append((x.price/x.skill.norm*x.skill.weight*100))
                     elif y.employee.report_to == y.rater:
                         manager.append((x.price/x.skill.norm*100))
                         managerw.append((x.price/x.skill.norm*x.skill.weight*100))
                     elif y.employee == y.rater.report_to:
                         sub.append((x.price/x.skill.norm*100))
-                        subw.append((x.price/x.skill.norm*x.skill.weight*100))
-                    elif y.employee == y.rater:
-                        selfscore.append((x.price/x.skill.norm*100))
-                        selfscorew.append((x.price/x.skill.norm*x.skill.weight*100))
+                        subw.append((x.price/x.skill.norm*x.skill.weight*100))            
+                    elif y.employee.report_to == y.rater.report_to:
+                        cowerker.append((x.price/x.skill.norm*100))
+                        cowerkerw.append((x.price/x.skill.norm*x.skill.weight*100))
                     else:
                         pass
                 except:
