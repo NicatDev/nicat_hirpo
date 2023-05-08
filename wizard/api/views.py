@@ -487,14 +487,18 @@ class HomePageView(generics.ListAPIView):
         
         if empexs:
             check=Project.objects.filter(employee=self.request.user.employee.id).exists()
-            return Response(status=403)
+
             if check:
-                
+
                 instance = [self.request.user.employee.project]
-                return Response(status=402)
+            else:
+                return instance
+              
         elif Project.objects.filter(companyLeader = self.request.user.id).exists():       
             instance = Project.objects.filter(companyLeader = self.request.user.id)
-            return Response(status=401)
+
+            return instance
         else:
-            return Response(status=404)
+            print('4')
+            return instance
         return instance
