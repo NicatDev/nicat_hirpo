@@ -327,7 +327,7 @@ class WizardComptencySaveView(APIView):
         return Response({'message':'delete success'})
             
 class WeightUpdateView(APIView):     
-    permission_classes = [IsCompanyLead]
+
     def put(self, request): 
         serializer = WeightUpdateSerializer   
         data=request.data
@@ -484,21 +484,23 @@ class HomePageView(generics.ListAPIView):
     def get_queryset(self):
         instance = []
         empexs = Employee.objects.filter(user = self.request.user).exists()
-        
-        if empexs:
-            check=Project.objects.filter(employee=self.request.user.employee.id).exists()
+        print("b") 
+        check=Project.objects.filter(employee=self.request.user.employee.id).exists()
+        if empexs and check:
+           
+          
 
-            if check:
-
-                instance = [self.request.user.employee.project]
-            else:
-                return instance
+            instance = [self.request.user.employee.project]
+            print("1")
+            return instance
+       
               
         elif Project.objects.filter(companyLeader = self.request.user.id).exists():       
             instance = Project.objects.filter(companyLeader = self.request.user.id)
-
+            print(instance,"el")
             return instance
         else:
             print('4')
             return instance
+        print("c")
         return instance
