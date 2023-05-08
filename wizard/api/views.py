@@ -484,10 +484,17 @@ class HomePageView(generics.ListAPIView):
     def get_queryset(self):
         instance = []
         empexs = Employee.objects.filter(user = self.request.user).exists()
+        
         if empexs:
-            instance = [self.request.user.employee.project]
-        else:
-             
+            check=Project.objects.filter(employee=self.request.user.employee.id).exists()
+            return Response(status=403)
+            if check:
+                
+                instance = [self.request.user.employee.project]
+                return Response(status=402)
+        elif Project.objects.filter(companyLeader = self.request.user.id).exists():       
             instance = Project.objects.filter(companyLeader = self.request.user.id)
-           
+            return Response(status=401)
+        else:
+            return Response(status=404)
         return instance
