@@ -81,7 +81,7 @@ class CreateProjectView(APIView):
 #wizardpositionedit
 class PositionUpdateView(APIView):
     def put(self, request, *args, **kwargs):
-        position_serializer = DepartmentPositionSerializer
+        position_serializer = DepartmentPosition111Serializer
         print(request.data)
         data = request.data.get('selecteds')
         data2 = request.data.get('objects2')
