@@ -73,9 +73,6 @@ class AddFrequencyApiView(APIView):
                         pointserializer = UserSkillSerializer(data={'card':score.id,'skill':skill.id})
                         pointserializer.is_valid(raise_exception=True)
                         pointserializer.save()
-        
-    
-        
         return Response({'message':'success'})
     
 class EvaluationList(generics.ListAPIView):

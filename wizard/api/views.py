@@ -310,8 +310,10 @@ class WizardComptencySaveView(APIView):
             department = ProjectDepartment.objects.get(name=comptency['department'])
             position=DepartmentPosition.objects.get(name=comptency['position'],department=department)
             serializer = SkillNormCreateSerializer(data={'norm':comptency['newNorm'],"name":comptency['skill'],"position":position.id})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            if serializer.is_valid():
+                serializer.save()
+            else:
+                return Response({'data':serializer.data},status=400)
 
         for comptency in data.get('editedNorms'):
             comp = MainSkill.objects.get(id=comptency['id'])
