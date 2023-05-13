@@ -499,19 +499,15 @@ class HomePageView(generics.ListAPIView):
         check=Project.objects.filter(employee=self.request.user.employee.id).exists()
         if empexs and check:
            
-          
-
             instance = [self.request.user.employee.project]
-            print("1")
+
             return instance
-       
-              
         elif Project.objects.filter(companyLeader = self.request.user.id).exists():       
             instance = Project.objects.filter(companyLeader = self.request.user.id)
-            print(instance,"el")
             return instance
         else:
-            print('4')
-            return instance
-        print("c")
-        return instance
+            raise ValueError("Bir hata oluştu.")
+
+
+            
+        
