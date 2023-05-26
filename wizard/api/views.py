@@ -300,7 +300,7 @@ class ExcellUploadView(generics.ListAPIView):
                 project = user.project
                 print(project)
             return queryset.filter(project=project)   
-        
+            
 class WizardComptencySaveView(APIView):
 
     def post(self,request):

@@ -121,8 +121,6 @@ class DepartmentPosition(models.Model):
         
         
     
-        
-
 class MainSkill(models.Model):
     name = models.CharField(max_length=255,verbose_name='Bacariq adi')
     skilltype = models.CharField(choices=skilltype,max_length=5,null=True,blank=True,verbose_name='skilltype')
