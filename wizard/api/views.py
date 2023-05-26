@@ -296,7 +296,7 @@ class Get_Weights(APIView):
                 x.weight = 75/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]               
             x.save()
                 
-        return Response({"success":number})
+        return Response({"message":"success"})
     
 #organizial chart department update
 class DepartmentUpdateView(APIView):
