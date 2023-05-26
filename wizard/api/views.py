@@ -224,14 +224,54 @@ class OneTimeView(APIView):
                         skill.is_valid(raise_exception=True)
                         skill.save()                       
                         number +=1
-        poswe = {}                
-        for x in MainSkill.objects.all():
+        # poswe = {}                
+        # for x in MainSkill.objects.all():
+        #     if x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype in poswe:
+        #         poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype] = poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]+1
+        #     else:
+        #         poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype] = 1
+                
+        # for x in MainSkill.objects.all():
+            
+        #     if x.skilltype == 'Soft' and x.position.name == 'Junior':
+        #         x.weight = 25/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
+
+        #     elif x.skilltype == 'Hard' and x.position.name == 'Junior':
+        #         x.weight = 75/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
+        #     if x.skilltype == 'Soft' and x.position.name == 'Specialist':
+        #         x.weight = 40/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
+        #     elif x.skilltype == 'Hard' and x.position.name == 'Specialist':
+        #         x.weight = 60/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
+        #     if x.skilltype == 'Soft' and x.position.name == 'Senior Specialist':
+        #         x.weight = 50/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
+        #     elif x.skilltype == 'Hard' and x.position.name == 'Senior Specialist':
+        #         x.weight = 50/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
+        #     if x.skilltype == 'Soft' and x.position.name == 'Manager':
+        #         x.weight = 40/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
+        #     elif x.skilltype == 'Hard' and x.position.name == 'Manager':
+        #         x.weight = 60/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
+        #     if x.skilltype == 'Soft' and x.position.name == 'Top Manager':
+        #         x.weight = 25/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
+        #     elif x.skilltype == 'Hard' and x.position.name == 'Top Manager':
+        #         x.weight = 75/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]               
+        #     x.save()
+                
+        return Response({"success":number})
+
+class Get_Weights(APIView):
+    def put(self,*args,**kwargs):
+        user = self.request.user.id
+
+  
+        project=Project.objects.get(companyLeader=user)
+        poswe = {}   
+        for x in MainSkill.objects.filter(position__department__project = project.id):
             if x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype in poswe:
                 poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype] = poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]+1
             else:
                 poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype] = 1
                 
-        for x in MainSkill.objects.all():
+        for x in MainSkill.objects.filter(position__department__project = project.id):
             
             if x.skilltype == 'Soft' and x.position.name == 'Junior':
                 x.weight = 25/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
@@ -257,7 +297,6 @@ class OneTimeView(APIView):
             x.save()
                 
         return Response({"success":number})
-    
     
 #organizial chart department update
 class DepartmentUpdateView(APIView):
