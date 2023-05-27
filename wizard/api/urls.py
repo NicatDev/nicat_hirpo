@@ -29,6 +29,7 @@ urlpatterns = [
     path('HomePageView/', HomePageView.as_view(), name='HomePageView'),
     path('AddjsonView/', AddjsonView.as_view(), name='AddjsonView'),
     path('Get_Weights/', Get_Weights.as_view(), name='Get_Weights'),
+    path('CreateMainSkill/', CreateMainSkill.as_view(), name='CreateMainSkill'),
 
     
 

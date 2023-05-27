@@ -298,6 +298,10 @@ class Get_Weights(APIView):
                 
         return Response({"message":"success"})
     
+class CreateMainSkill(generics.CreateAPIView):
+    queryset = MainSkill.objects.all()
+    serializer_class = SkillSerializer
+    
 #organizial chart department update
 class DepartmentUpdateView(APIView):
     
