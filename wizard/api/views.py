@@ -541,8 +541,8 @@ class HomePageView(generics.ListAPIView):
         instance = []
         empexs = Employee.objects.filter(user = self.request.user).exists()
         print("b") 
-        check=Project.objects.filter(employee=self.request.user.employee.id).exists()
-        if empexs and check:
+        
+        if empexs:
            
             instance = [self.request.user.employee.project]
 
