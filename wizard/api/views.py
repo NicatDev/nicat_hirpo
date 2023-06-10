@@ -348,22 +348,27 @@ class WizardComptencySaveView(APIView):
 
     def post(self,request):
         data = request.data
-        
+        print('0')
         for comptency in data.get('createdNorms'):
-            department = ProjectDepartment.objects.get(name=comptency['department'])
-            position=DepartmentPosition.objects.get(name=comptency['position'],department=department)
-            serializer = SkillNormCreateSerializer(data={'norm':comptency['newNorm'],"name":comptency['skill'],"position":position.id})
+            department = ProjectDepartment.objects.get(name=comptency.get('department'))
+            position=DepartmentPosition.objects.get(name=comptency.get('position'),department=department.id)
+            serializer = SkillNormCreateSerializer(data={'norm':comptency.get('newNorm'),"name":comptency.get('skill'),"position":position.id})
+            print(serializer.errors)
             if serializer.is_valid():
                 serializer.save()
+                print('1')
             else:
+                print('2')
+                print(serializer.errors)
                 return Response({'data':serializer.data},status=400)
 
         for comptency in data.get('editedNorms'):
-            comp = MainSkill.objects.get(id=comptency['id'])
-            serializer = SkillNormUpdateSerializer(comp,data={'norm':comptency['norm']})
+            comp = MainSkill.objects.get(id=comptency.get('id'))
+            serializer = SkillNormUpdateSerializer(comp,data={'norm':comptency.get('norm')})
             if serializer.is_valid():
                 serializer.save()
             else:
+            
                 return Response(status=400)
 
         for comptency in data.get('removedNorms'):

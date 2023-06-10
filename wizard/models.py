@@ -32,7 +32,7 @@ class Hirponorms(models.Model):
 class Project(models.Model):
     project_name = models.CharField(max_length=255,verbose_name='Project adi')
     employee_number = models.PositiveIntegerField(verbose_name='Isci sayi')
-    industry = models.CharField(max_length=30, choices=industries, verbose_name='Company field')
+    industry = models.CharField(max_length=30,  verbose_name='Company field')
     companyLeader = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True,related_name="project")
     
     def __str__(self):
