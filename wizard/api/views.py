@@ -52,13 +52,12 @@ class CreateProjectView(APIView):
                 if employee_number == 1:
                     data=[{"name":"Senior"}]
                 elif employee_number>1 and employee_number<4:
-                    data = [{'name':'Specialist'},{'name':'Senior Specialist'}]
+                    data = [{'name':'Specialist'},{'name':'Senior'}]
                 elif employee_number>3 and employee_number<6:
-                    data = [{'name':'Junior'},{'name':'Senior Specialist'},{'name':'Manager'}]
-                elif employee_number>5 and employee_number<11:
-                    data = [{'name':'Junior'},{'name':'Specialist'},{'name':'Senior Specialist'},{'name':'Manager'}]   
-                elif employee_number>10:
-                    data = [{'name':'Junior'},{'name':'Specialist'},{'name':'Senior Specialist'},{'name':'Manager'},{'name':'Top manager'}]  
+                    data = [{'name':'Junior'},{'name':'Senior'},{'name':'Manager'}]
+                elif employee_number>5:
+                    data = [{'name':'Junior'},{'name':'Specialist'},{'name':'Senior'},{'name':'Manager'}]   
+
                     
                 
                 for x in data:
@@ -266,6 +265,7 @@ class Get_Weights(APIView):
         project=Project.objects.get(companyLeader=user)
         poswe = {}   
         for x in MainSkill.objects.filter(position__department__project = project.id):
+            print(x.position.name,x.skilltype,x.position.department.id)
             if x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype in poswe:
                 poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype] = poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]+1
             else:
@@ -282,18 +282,14 @@ class Get_Weights(APIView):
                 x.weight = 40/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             elif x.skilltype == 'Hard' and x.position.name == 'Specialist':
                 x.weight = 60/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
-            if x.skilltype == 'Soft' and x.position.name == 'Senior Specialist':
+            if x.skilltype == 'Soft' and x.position.name == 'Senior':
                 x.weight = 50/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
-            elif x.skilltype == 'Hard' and x.position.name == 'Senior Specialist':
+            elif x.skilltype == 'Hard' and x.position.name == 'Senior':
                 x.weight = 50/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             if x.skilltype == 'Soft' and x.position.name == 'Manager':
                 x.weight = 40/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             elif x.skilltype == 'Hard' and x.position.name == 'Manager':
                 x.weight = 60/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
-            if x.skilltype == 'Soft' and x.position.name == 'Top Manager':
-                x.weight = 25/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
-            elif x.skilltype == 'Hard' and x.position.name == 'Top Manager':
-                x.weight = 75/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]               
             x.save()
                 
         return Response({"message":"success"})
@@ -301,6 +297,21 @@ class Get_Weights(APIView):
 class CreateMainSkill(generics.CreateAPIView):
     queryset = MainSkill.objects.all()
     serializer_class = SkillSerializer
+    
+
+    def create(self, request, *args, **kwargs):
+        print('1')
+        print(request.data)
+        data = request.data
+        for x in MainSkill.objects.all():
+            if x.name == data.get('name') and x.position.id == data.get('position'):
+                return Response(status=status.HTTP_409_CONFLICT)
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({'message':'success'}, status=status.HTTP_201_CREATED)
     
 #organizial chart department update
 class DepartmentUpdateView(APIView):
@@ -349,11 +360,20 @@ class WizardComptencySaveView(APIView):
     def post(self,request):
         data = request.data
         print('0')
+        print(data)
         for comptency in data.get('createdNorms'):
+            
+            for x in MainSkill.objects.all():
+                
+                if comptency.get('skill') == x.name:
+                    skltype = x.skilltype
+                    break
+                
+                
             department = ProjectDepartment.objects.get(name=comptency.get('department'))
             position=DepartmentPosition.objects.get(name=comptency.get('position'),department=department.id)
-            serializer = SkillNormCreateSerializer(data={'norm':comptency.get('newNorm'),"name":comptency.get('skill'),"position":position.id})
-            print(serializer.errors)
+            serializer = SkillNormCreateSerializer(data={'norm':comptency.get('newNorm'),"name":comptency.get('skill'),"position":position.id,'skilltype':skltype})
+
             if serializer.is_valid():
                 serializer.save()
                 print('1')
