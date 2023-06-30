@@ -170,6 +170,15 @@ class Employee(models.Model):
         verbose_name = 'Employee'
         verbose_name_plural = 'Employees'
     
+    def delete(self, *args, **kwargs):
+        parent = self.parent
+        super().delete(*args, **kwargs)
+        parent.delete_if_child_deleted()
+
+    def delete_if_child_deleted(self):
+        if self.parent.childmodel_set.count() == 0:
+            self.parent.delete()
+    
     def get_compatencies(self):
         comptencies = []
         for c in MainSkill.objects.filter(position=self.position):

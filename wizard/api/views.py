@@ -84,6 +84,7 @@ class PositionUpdateView(APIView):
         print(request.data)
         data = request.data.get('selecteds')
         data2 = request.data.get('objects2')
+        data3 = request.data.get('reported')
         print(data,data2,request.data)
         if data:
             for position_data in data:
@@ -96,8 +97,15 @@ class PositionUpdateView(APIView):
                 position = DepartmentPosition.objects.get(id=position_data.get('id'))
                 if position:            
                     position.delete()
-                    
-        return Response(serializer.data)
+
+        if data3:
+            for x in data3.keys():
+                print(x)
+                position = DepartmentPosition.objects.get(id = x)
+                position.report_to = DepartmentPosition.objects.get(id =data3[x])
+                position.save()
+                print(position,position.report_to)
+        return Response(status=200)
 
     
 class DepartmentPositionListView(generics.ListAPIView):
@@ -566,18 +574,19 @@ class HomePageView(generics.ListAPIView):
         instance = []
         empexs = Employee.objects.filter(user = self.request.user).exists()
         print("b") 
-        check=Project.objects.filter(employee=self.request.user.employee.id).exists()
-        if empexs and check:
-           
-            instance = [self.request.user.employee.project]
+        if empexs:
+            check=Project.objects.filter(employee=self.request.user.employee.id).exists()
+            if check:
+            
+                instance = [self.request.user.employee.project]
 
-            return instance
+                return instance
         elif Project.objects.filter(companyLeader = self.request.user.id).exists():       
             instance = Project.objects.filter(companyLeader = self.request.user.id)
             return instance
         else:
             raise ValueError("Bir hata oluştu.")
+        
 
 
-            
         
