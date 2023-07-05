@@ -387,10 +387,11 @@ class WizardComptencySaveView(APIView):
                     skltype = x.skilltype
                     break
                 
-                
-            department = ProjectDepartment.objects.get(name=comptency.get('department'))
-            position=DepartmentPosition.objects.get(name=comptency.get('position'),department=department.id)
-            serializer = SkillNormCreateSerializer(data={'norm':comptency.get('newNorm'),"name":comptency.get('skill'),"position":position.id,'skilltype':skltype})
+            id = comptency.get('positionId')
+            
+            
+            
+            serializer = SkillNormCreateSerializer(data={'norm':comptency.get('newNorm'),"name":comptency.get('skill'),"position":id,'skilltype':skltype})
 
             if serializer.is_valid():
                 serializer.save()
