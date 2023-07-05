@@ -29,24 +29,23 @@ class LoginView(APIView):
         return Response({"username": username, "tokens": tokens,"userId":user.id}, status=201)
 
 
-
-
-
 class RegistrationView(APIView):     
     def post(self,request,format=None):
-        user_serializer = RegistrationSerializer(data=request.data)
+        print(request.data)
+        data = request.data
+        first_name = data.pop('firstName')
+        last_name = data.pop('lastName')
+        user_serializer = RegistrationSerializer(data=data)
         
         user_serializer.is_valid(raise_exception=True)
 
         user = user_serializer.save()
-        # activation_code_serializer = ActivationSerializer(data={"user":user.id})
-        # activation_code_serializer.is_valid(raise_exception=True)
-
-        # activation_code_serializer.save()
-        employeeSerializer = EmployeeSerializer(data={"user":user.id,"is_systemadmin":True})
+     
+        employeeSerializer = EmployeeSerializer(data={"first_name":first_name,"last_name":last_name,"user":user.id,"is_systemadmin":True})
         employeeSerializer.is_valid(raise_exception=True)
+        
+        employee = employeeSerializer.save()
 
-        employeeSerializer.save()
         return Response({"Status": "success", "data": user_serializer.data}, status=200)
 
 

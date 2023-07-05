@@ -31,10 +31,13 @@ class CreateProjectView(APIView):
         
         if project_serializer.is_valid(raise_exception=True):
             project = project_serializer.save()
-            print("project")
+        
             user = request.user
-            
-            
+            if Employee.objects.filter(user=user.id).exists():
+                myemp = Employee.objects.get(user = user.id)
+                myemp.project = project
+                myemp.save()
+                print(myemp.project)
             for item in list(object_data.keys()):
                 name=str(item)
                 value=str(object_data[item])
@@ -52,13 +55,12 @@ class CreateProjectView(APIView):
                 if employee_number == 1:
                     data=[{"name":"Senior"}]
                 elif employee_number>1 and employee_number<4:
-                    data = [{'name':'Specialist'},{'name':'Senior Specialist'}]
+                    data = [{'name':'Specialist'},{'name':'Senior'}]
                 elif employee_number>3 and employee_number<6:
-                    data = [{'name':'Junior'},{'name':'Senior Specialist'},{'name':'Manager'}]
-                elif employee_number>5 and employee_number<11:
-                    data = [{'name':'Junior'},{'name':'Specialist'},{'name':'Senior Specialist'},{'name':'Manager'}]   
-                elif employee_number>10:
-                    data = [{'name':'Junior'},{'name':'Specialist'},{'name':'Senior Specialist'},{'name':'Manager'},{'name':'Top manager'}]  
+                    data = [{'name':'Junior'},{'name':'Senior'},{'name':'Manager'}]
+                elif employee_number>5:
+                    data = [{'name':'Junior'},{'name':'Specialist'},{'name':'Senior'},{'name':'Manager'}]   
+
                     
                 
                 for x in data:
@@ -85,6 +87,7 @@ class PositionUpdateView(APIView):
         print(request.data)
         data = request.data.get('selecteds')
         data2 = request.data.get('objects2')
+        data3 = request.data.get('reported')
         print(data,data2,request.data)
         if data:
             for position_data in data:
@@ -97,8 +100,18 @@ class PositionUpdateView(APIView):
                 position = DepartmentPosition.objects.get(id=position_data.get('id'))
                 if position:            
                     position.delete()
-                    
-        return Response(serializer.data)
+
+        if data3:
+            for x in data3.keys():
+                position = DepartmentPosition.objects.get(id = x)
+                if data3[x] == 'Ceo':
+                    position.report_to_ceo = True
+                else:   
+                    position.report_to = DepartmentPosition.objects.get(id =data3[x])
+                position.save()
+                print(position,position.report_to)
+                print(position.report_to_ceo)
+        return Response(status=200)
 
     
 class DepartmentPositionListView(generics.ListAPIView):
@@ -107,14 +120,18 @@ class DepartmentPositionListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = ProjectDepartment.objects.all()
         user=self.request.user
+        
         if user.is_authenticated:
             try:
                 project=Project.objects.get(companyLeader=user.id)
             except:
                 user = Employee.objects.get(user= user)
                 project = user.project
+            queryset = queryset.filter(project=project)
             
-            return queryset.filter(project=project)
+                  
+                    
+            return queryset
         
         else:
             return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -266,6 +283,7 @@ class Get_Weights(APIView):
         project=Project.objects.get(companyLeader=user)
         poswe = {}   
         for x in MainSkill.objects.filter(position__department__project = project.id):
+            print(x.position.name,x.skilltype,x.position.department.id)
             if x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype in poswe:
                 poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype] = poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]+1
             else:
@@ -282,18 +300,14 @@ class Get_Weights(APIView):
                 x.weight = 40/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             elif x.skilltype == 'Hard' and x.position.name == 'Specialist':
                 x.weight = 60/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
-            if x.skilltype == 'Soft' and x.position.name == 'Senior Specialist':
+            if x.skilltype == 'Soft' and x.position.name == 'Senior':
                 x.weight = 50/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
-            elif x.skilltype == 'Hard' and x.position.name == 'Senior Specialist':
+            elif x.skilltype == 'Hard' and x.position.name == 'Senior':
                 x.weight = 50/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             if x.skilltype == 'Soft' and x.position.name == 'Manager':
                 x.weight = 40/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
             elif x.skilltype == 'Hard' and x.position.name == 'Manager':
                 x.weight = 60/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
-            if x.skilltype == 'Soft' and x.position.name == 'Top Manager':
-                x.weight = 25/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]
-            elif x.skilltype == 'Hard' and x.position.name == 'Top Manager':
-                x.weight = 75/poswe[x.position.name+'-'+str(x.position.department.id)+'-'+x.skilltype]               
             x.save()
                 
         return Response({"message":"success"})
@@ -301,6 +315,21 @@ class Get_Weights(APIView):
 class CreateMainSkill(generics.CreateAPIView):
     queryset = MainSkill.objects.all()
     serializer_class = SkillSerializer
+    
+
+    def create(self, request, *args, **kwargs):
+        print('1')
+        print(request.data)
+        data = request.data
+        for x in MainSkill.objects.all():
+            if x.name == data.get('name') and x.position.id == data.get('position'):
+                return Response(status=status.HTTP_409_CONFLICT)
+        
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response({'message':'success'}, status=status.HTTP_201_CREATED)
     
 #organizial chart department update
 class DepartmentUpdateView(APIView):
@@ -348,22 +377,36 @@ class WizardComptencySaveView(APIView):
 
     def post(self,request):
         data = request.data
-        
+        print('0')
+        print(data)
         for comptency in data.get('createdNorms'):
-            department = ProjectDepartment.objects.get(name=comptency['department'])
-            position=DepartmentPosition.objects.get(name=comptency['position'],department=department)
-            serializer = SkillNormCreateSerializer(data={'norm':comptency['newNorm'],"name":comptency['skill'],"position":position.id})
+            
+            for x in MainSkill.objects.all():
+                
+                if comptency.get('skill') == x.name:
+                    skltype = x.skilltype
+                    break
+                
+                
+            department = ProjectDepartment.objects.get(name=comptency.get('department'))
+            position=DepartmentPosition.objects.get(name=comptency.get('position'),department=department.id)
+            serializer = SkillNormCreateSerializer(data={'norm':comptency.get('newNorm'),"name":comptency.get('skill'),"position":position.id,'skilltype':skltype})
+
             if serializer.is_valid():
                 serializer.save()
+                print('1')
             else:
+                print('2')
+                print(serializer.errors)
                 return Response({'data':serializer.data},status=400)
 
         for comptency in data.get('editedNorms'):
-            comp = MainSkill.objects.get(id=comptency['id'])
-            serializer = SkillNormUpdateSerializer(comp,data={'norm':comptency['norm']})
+            comp = MainSkill.objects.get(id=comptency.get('id'))
+            serializer = SkillNormUpdateSerializer(comp,data={'norm':comptency.get('norm')})
             if serializer.is_valid():
                 serializer.save()
             else:
+            
                 return Response(status=400)
 
         for comptency in data.get('removedNorms'):
@@ -541,18 +584,26 @@ class HomePageView(generics.ListAPIView):
         instance = []
         empexs = Employee.objects.filter(user = self.request.user).exists()
         print("b") 
+<<<<<<< HEAD
         
         if empexs:
            
             instance = [self.request.user.employee.project]
+=======
+        if empexs:
+            check=Project.objects.filter(employee=self.request.user.employee.id).exists()
+            if check:
+            
+                instance = [self.request.user.employee.project]
+>>>>>>> 2f6a6908268443274cee1e5b2ab6dcc9233bdfff
 
-            return instance
+                return instance
         elif Project.objects.filter(companyLeader = self.request.user.id).exists():       
             instance = Project.objects.filter(companyLeader = self.request.user.id)
             return instance
         else:
             raise ValueError("Bir hata oluştu.")
+        
 
 
-            
         

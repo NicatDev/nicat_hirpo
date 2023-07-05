@@ -158,7 +158,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Employee
-        fields = ("user", "is_systemadmin")
+        fields = ("user", "is_systemadmin","first_name","last_name")
         
         
 class EmployeeChangePassword(serializers.ModelSerializer):

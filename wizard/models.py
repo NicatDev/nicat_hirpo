@@ -32,7 +32,7 @@ class Hirponorms(models.Model):
 class Project(models.Model):
     project_name = models.CharField(max_length=255,verbose_name='Project adi')
     employee_number = models.PositiveIntegerField(verbose_name='Isci sayi')
-    industry = models.CharField(max_length=30, choices=industries, verbose_name='Company field')
+    industry = models.CharField(max_length=30,  verbose_name='Company field')
     companyLeader = models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True,related_name="project")
     
     def __str__(self):
@@ -110,6 +110,7 @@ class DepartmentPosition(models.Model):
     description = models.TextField(verbose_name='Position haqqinda',null=True,blank=True)
     department = models.ForeignKey(ProjectDepartment,on_delete=models.CASCADE,null=True,blank=True,related_name='departmentpositions')
     report_to = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+    report_to_ceo = models.BooleanField(null=True,blank=True,default=False)
     
     def __str__(self):
         return f"{self.name} - {self.department.name} - {self.department.project.project_name}"
@@ -169,6 +170,15 @@ class Employee(models.Model):
         ordering = ['-position']
         verbose_name = 'Employee'
         verbose_name_plural = 'Employees'
+    
+    def delete(self, *args, **kwargs):
+        parent = self.parent
+        super().delete(*args, **kwargs)
+        parent.delete_if_child_deleted()
+
+    def delete_if_child_deleted(self):
+        if self.parent.childmodel_set.count() == 0:
+            self.parent.delete()
     
     def get_compatencies(self):
         comptencies = []
