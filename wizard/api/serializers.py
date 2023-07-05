@@ -85,8 +85,15 @@ class ProjectDepartmentSerializer(serializers.ModelSerializer):
             ceo = Employee.objects.get(user=ceouser.id)
             full_name = ceo.first_name + " " + ceo.last_name
         return {"ceo_name":full_name}
+ 
+class DepartmentLLLSerializer(serializers.ModelSerializer):
+  
+    class Meta:
+        model = ProjectDepartment
+        fields = ('name','id')        
         
 class PositionListChoiceSerializer(serializers.ModelSerializer):
+    department = DepartmentLLLSerializer()
     class Meta:
         model = DepartmentPosition
         fields = '__all__'
