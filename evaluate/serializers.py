@@ -115,9 +115,22 @@ class AllScoresForEvaluateSerializer(serializers.ModelSerializer):
         
         return {'total_weight':total_weight,'total_score':total_score}
             
-           
-        
-        
+    def get_staff_weight(self,obj):
+        rater = obj.rater
+        emp = obj.employee 
+        if rater.is_systemadmin:
+            weight = "Ceo"
+        elif emp.report_to == rater.report_to:
+            weight = 'Cowerker'
+        elif emp.report_to == rater:
+            weight = 'Manager'
+        elif emp == rater.report_to:
+            weight = 'Subworker'
+        elif emp == rater:
+            weight = 'Self'
+        else:
+            weight = obj.rater.first_name + obj.last_name
+        return {"weight":weight}
 class SimpleProjectDepartmentSerializer(serializers.ModelSerializer):
     compatencies = serializers.SerializerMethodField()
     get_allSkills = serializers.SerializerMethodField()

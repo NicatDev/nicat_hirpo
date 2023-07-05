@@ -187,14 +187,17 @@ class Employee(models.Model):
         return comptencies
     
     def get_total_score(self):
-        cowerker,selfscore,sub,manager = [],[],[],[]
-        cowerkerw,selfscorew,subw,managerw = [],[],[],[]
+        ceo,cowerker,selfscore,sub,manager = [],[],[],[]
+        ceow,cowerkerw,selfscorew,subw,managerw = [],[],[],[]
         total_weight =0
         for y in self.myscore.all():
             for x in y.comptency.all():
                 try:
                     total_weight += x.skill.weight
-                    if y.employee == y.rater:
+                    if y.employee.is_systemadmin ==True and y.rater.report_to_ceo ==True:
+                        ceo.append((x.price/x.skill.norm*100))
+                        ceow.append((x.price/x.skill.norm*x.skill.weight*100))
+                    elif y.employee == y.rater:
                         selfscore.append((x.price/x.skill.norm*100))
                         selfscorew.append((x.price/x.skill.norm*x.skill.weight*100))
                     elif y.employee.report_to == y.rater:
@@ -213,22 +216,26 @@ class Employee(models.Model):
         print(managerw,subw,selfscorew,cowerkerw)
         result = {}
         print(cowerkerw)
+        if len(ceo)>0:
+            result['ceo'] = int(sum(ceo)/len(ceo))
+        else:
+            result['ceo'] = 0
         if len(cowerker)>0:
             result['cowerker'] = int(sum(cowerker)/len(cowerker))
         else:
-            result['cowerker'] = 100
+            result['cowerker'] = 0
         if len(selfscore)>0:
             result['selfscore'] = int(sum(selfscore)/len(selfscore))
         else:
-            result['selfscore'] = 100
+            result['selfscore'] = 0
         if len(sub)>0:
             result['sub'] = int(sum(sub)/len(sub))
         else:
-            result['sub'] = 100
+            result['sub'] = 0
         if len(manager)>0:
             result['manager'] = int(sum(manager)/len(manager))
         else:
-            result['manager'] = 100
+            result['manager'] = 0
         
         for x in range(len(cowerkerw)):
             if cowerkerw[x]>100:
@@ -244,19 +251,21 @@ class Employee(models.Model):
                 managerw[x]=100
         
         if len(cowerkerw)==0:
-            cowerkerw = [100]
+            cowerkerw = [0]
         if len(selfscorew)==0:
-            selfscorew = [100]
+            selfscorew = [0]
         if len(subw)==0:
-            subw = [100]
+            subw = [0]
         if len(managerw)==0:
-            managerw = [100]
+            managerw = [0]
         
         print(sum(cowerkerw),sum(managerw),sum(subw),sum(selfscorew))
-            
+        
         #result['total2'] = int(0.3*sum(cowerkerw) + 0.1*sum(selfscorew) + 0.2*sum(subw) + 0.4*sum(managerw))
-        result['total2'] = result['cowerker']*0.3+result['selfscore']*0.1+result['sub']*0.2+result['manager']*0.4
     
+        
+        result['total2'] = result['cowerker']*0.3+result['selfscore']*0.1+result['sub']*0.2+result['manager']*0.4
+        
         return result
     
     # def get_hard_goal(self):
