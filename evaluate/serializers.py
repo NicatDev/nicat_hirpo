@@ -91,7 +91,7 @@ class UserSkillForEvaEvaCompSerializer(serializers.ModelSerializer):
     
 class AllScoresForEvaluateSerializer(serializers.ModelSerializer):
     total = serializers.SerializerMethodField()
-    
+    staff_weight = serializers.SerializerMethodField()
     employee = employeeeSerializer()
     comptency = UserSkillForEvaEvaCompSerializer(many=True)
     class Meta:
