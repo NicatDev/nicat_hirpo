@@ -86,12 +86,15 @@ class ProjectDepartmentSerializer(serializers.ModelSerializer):
             full_name = ceo.first_name + " " + ceo.last_name
         return {"ceo_name":full_name}
         
-        
+class PositionListChoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DepartmentPosition
+        fields = '__all__'
 
 class SimpleProjectDepartmentSerializer(serializers.ModelSerializer):
     compatencies = serializers.SerializerMethodField()
     get_allSkills = serializers.SerializerMethodField()
-    departmentpositions = DepartmentPositionSerializer(many=True)
+    departmentpositions = PositionListChoiceSerializer(many=True)
     class Meta:
         model = ProjectDepartment
         fields = '__all__'
