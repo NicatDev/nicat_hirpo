@@ -31,10 +31,13 @@ class CreateProjectView(APIView):
         
         if project_serializer.is_valid(raise_exception=True):
             project = project_serializer.save()
-            print("project")
+        
             user = request.user
-            
-            
+            if Employee.objects.filter(user=user.id).exists():
+                myemp = Employee.objects.get(user = user.id)
+                myemp.project = project
+                myemp.save()
+                print(myemp.project)
             for item in list(object_data.keys()):
                 name=str(item)
                 value=str(object_data[item])
@@ -100,11 +103,14 @@ class PositionUpdateView(APIView):
 
         if data3:
             for x in data3.keys():
-                print(x)
                 position = DepartmentPosition.objects.get(id = x)
-                position.report_to = DepartmentPosition.objects.get(id =data3[x])
+                if data3[x] == 'Ceo':
+                    position.report_to_ceo = True
+                else:   
+                    position.report_to = DepartmentPosition.objects.get(id =data3[x])
                 position.save()
                 print(position,position.report_to)
+                print(position.report_to_ceo)
         return Response(status=200)
 
     
@@ -114,14 +120,18 @@ class DepartmentPositionListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = ProjectDepartment.objects.all()
         user=self.request.user
+        
         if user.is_authenticated:
             try:
                 project=Project.objects.get(companyLeader=user.id)
             except:
                 user = Employee.objects.get(user= user)
                 project = user.project
+            queryset = queryset.filter(project=project)
             
-            return queryset.filter(project=project)
+                  
+                    
+            return queryset
         
         else:
             return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)

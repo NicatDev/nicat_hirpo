@@ -110,6 +110,7 @@ class DepartmentPosition(models.Model):
     description = models.TextField(verbose_name='Position haqqinda',null=True,blank=True)
     department = models.ForeignKey(ProjectDepartment,on_delete=models.CASCADE,null=True,blank=True,related_name='departmentpositions')
     report_to = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True)
+    report_to_ceo = models.BooleanField(null=True,blank=True,default=False)
     
     def __str__(self):
         return f"{self.name} - {self.department.name} - {self.department.project.project_name}"

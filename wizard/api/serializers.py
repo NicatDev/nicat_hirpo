@@ -28,11 +28,12 @@ class ProjectDepartmentSerializer4(serializers.ModelSerializer):
         model = ProjectDepartment
         fields = ('id','name')
     
+    
 class DepartmentPositionSerializer(serializers.ModelSerializer):
     department = ProjectDepartmentSerializer4()
     class Meta:
         model = DepartmentPosition
-        fields = ('name','department','id','report_to')
+        fields = ('name','department','id','report_to','report_to_ceo')
 
 class DepartmentPosition111Serializer(serializers.ModelSerializer):
 
@@ -67,16 +68,25 @@ class ProjectDepartmentSerializer(serializers.ModelSerializer):
     departmentpositions = DepartmentPositionSerializer(many=True)
     compatencies = serializers.SerializerMethodField()
     allSkills = serializers.SerializerMethodField()
-    
+    ceo = serializers.SerializerMethodField()
     class Meta:
         model = ProjectDepartment
-        fields = ('id', 'project', 'name', 'description', 'employee_number', 'departmentpositions','compatencies','allSkills')
+        fields = ('ceo','id', 'project', 'name', 'description', 'employee_number', 'departmentpositions','compatencies','allSkills')
         
     def get_compatencies(self,obj):
         return obj.get_compatencies()
     
     def get_allSkills(self,obj):
         return obj.get_allSkills()
+    
+    def get_ceo(self,obj):
+        ceouser = obj.project.companyLeader
+        if Employee.objects.filter(user=ceouser.id).exists():
+            ceo = Employee.objects.get(user=ceouser.id)
+            full_name = ceo.first_name + " " + ceo.last_name
+        return {"ceo_name":full_name}
+        
+        
 
 class SimpleProjectDepartmentSerializer(serializers.ModelSerializer):
     compatencies = serializers.SerializerMethodField()
