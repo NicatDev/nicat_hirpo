@@ -91,6 +91,7 @@ class ProjectDepartmentSerializer(serializers.ModelSerializer):
 class SimpleProjectDepartmentSerializer(serializers.ModelSerializer):
     compatencies = serializers.SerializerMethodField()
     get_allSkills = serializers.SerializerMethodField()
+    departmentpositions = DepartmentPositionSerializer(many=True)
     class Meta:
         model = ProjectDepartment
         fields = '__all__'
@@ -107,6 +108,8 @@ class SimpleProjectDepartmentSerializer(serializers.ModelSerializer):
     
     def get_get_allSkills(self,obj):
         return obj.get_allSkills()
+    
+        
 
 class SkillNormCreateSerializer(serializers.ModelSerializer):
     
