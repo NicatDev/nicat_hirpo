@@ -113,7 +113,7 @@ class DepartmentPosition(models.Model):
     report_to_ceo = models.BooleanField(null=True,blank=True,default=False)
     
     def __str__(self):
-        return f"{self.name}"
+        return f"{self.name} - {self.department.name} - {self.department.project.project_name}"
     
     class Meta:
         verbose_name = 'Position'
