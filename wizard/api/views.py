@@ -2,18 +2,21 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from wizard.api.serializers import *
 from rest_framework.response import Response
+
+
 import os
 import pandas as pd
 from wizard.models import *
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,IsAdminUser
 from rest_framework import status
 from django.contrib.auth.views import LogoutView
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from account.api.permissions import IsCompanyLead
+from account.api.permissions import IsCompanyLead,HasEmployeeOrNot
 
 #employee goal list
 class UserListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = Employee.objects.all()
     serializer_class = EmployeesallSerializer
     
@@ -21,6 +24,7 @@ class UserListView(generics.ListAPIView):
 class CreateProjectView(APIView):
 
     def post(self,request,format=None):
+        permission_classes = [IsAuthenticated]
         for pr in request.user.project.all():
             pr.delete()
      
@@ -83,6 +87,7 @@ class CreateProjectView(APIView):
 #wizardpositionedit
 class PositionUpdateView(APIView):
     def put(self, request, *args, **kwargs):
+        permission_classes = [IsAuthenticated]
         position_serializer = DepartmentPosition111Serializer
         print(request.data)
         data = request.data.get('selecteds')
@@ -116,7 +121,7 @@ class PositionUpdateView(APIView):
     
 class DepartmentPositionListView(generics.ListAPIView):
     serializer_class = ProjectDepartmentSerializer
-
+    permission_classes = [IsAuthenticated]
     def get_queryset(self):
         queryset = ProjectDepartment.objects.all()
         user=self.request.user
@@ -139,7 +144,7 @@ class DepartmentPositionListView(generics.ListAPIView):
         
 class DepartmentForOrganizitialChart(generics.ListAPIView):
     serializer_class = DepartmentSerializerForOrganizitialChart
-    
+    permission_classes = [IsAuthenticated]    
     def get_queryset(self):
         queryset = ProjectDepartment.objects.all()
         user=self.request.user
@@ -153,8 +158,8 @@ class DepartmentForOrganizitialChart(generics.ListAPIView):
                         
                                   
 class go_back(APIView):
-    
-   def delete(self, request):
+    permission_classes = [IsAuthenticated]    
+    def delete(self, request):
         data=request.data
         project = Project.objects.get(id=data.get("project"))
         project.delete()
@@ -162,8 +167,8 @@ class go_back(APIView):
     
     
 class project_delete(APIView):
-    
-   def delete(self, request):
+    permission_classes = [IsAuthenticated]
+    def delete(self, request):
         data=request.data
         user = User.objects.get(id=data.get("user_id"))
         employee = Employee.objects.get(user=user)
@@ -173,7 +178,7 @@ class project_delete(APIView):
         return Response({"message":"success"})
     
 class AddjsonView(APIView):
-    
+    permission_classes = [IsAuthenticated]
     def post(self,request):
         data = request.data
         for x in data:
@@ -185,7 +190,7 @@ class AddjsonView(APIView):
         
 #excellden sqle
 class OneTimeVieww(APIView):
-    
+    permission_classes = [IsAuthenticated]
     def post(self,request):
         df = pd.read_excel('media/Hirpolist.xlsx',usecols=['Department (eng)','Name of competency','Level (1-5)','Type (soft ot hard skills)','Position level'])
         df.fillna('null', inplace=True)
@@ -206,7 +211,7 @@ class OneTimeVieww(APIView):
     
 #after positions in wizard continue for creating norms
 class OneTimeView(APIView):
-
+    permission_classes = [IsAuthenticated]
     def post(self,*args,**kwargs):
         print('first_stage')
         # df = pd.read_excel('Hirpolist.xlsx',usecols=['Department (eng)','Name of competency','Level (1-5)','Type (soft ot hard skills)','Position level'])
@@ -276,6 +281,7 @@ class OneTimeView(APIView):
         return Response({"success":number})
 
 class Get_Weights(APIView):
+    permission_classes = [IsAuthenticated]
     def put(self,*args,**kwargs):
         user = self.request.user.id
 
@@ -315,7 +321,7 @@ class Get_Weights(APIView):
 class CreateMainSkill(generics.CreateAPIView):
     queryset = MainSkill.objects.all()
     serializer_class = SkillSerializer
-    
+    permission_classes = [IsAuthenticated]    
 
     def create(self, request, *args, **kwargs):
         print('1')
@@ -333,7 +339,7 @@ class CreateMainSkill(generics.CreateAPIView):
     
 #organizial chart department update
 class DepartmentUpdateView(APIView):
-    
+    permission_classes = [IsAuthenticated]    
     def post(self, request, *args, **kwargs):
         department_serializer = SimpleProjectDepartmentSerializer
         removed = request.data.get('removedDepartments')
@@ -357,7 +363,7 @@ from account.api.permissions import IsCompanyLead
 #wizardda comptency list view yaratmadan evvel       
 class ExcellUploadView(generics.ListAPIView):
     serializer_class = SimpleProjectDepartmentSerializer
-
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         queryset = ProjectDepartment.objects.all()
@@ -374,7 +380,7 @@ class ExcellUploadView(generics.ListAPIView):
             return queryset.filter(project=project)   
             
 class WizardComptencySaveView(APIView):
-
+    permission_classes = [IsAuthenticated]
     def post(self,request):
         data = request.data
         print('0')
@@ -416,7 +422,7 @@ class WizardComptencySaveView(APIView):
         return Response({'message':'delete success'})
             
 class WeightUpdateView(APIView):     
-
+    permission_classes = [IsAuthenticated]
     def put(self, request): 
         serializer = WeightUpdateSerializer   
         data=request.data
@@ -441,7 +447,7 @@ class WeightUpdateView(APIView):
     
     
 class LogoutAPIView(APIView):
-    
+
     def post(self, request):
         logout_view = LogoutView.as_view()
         response = logout_view(request)
@@ -450,7 +456,7 @@ class LogoutAPIView(APIView):
 
        
 class AddUser(APIView):
-    # permission_classes = [IsCompanyLead]
+    permission_classes = [IsAuthenticated]
     def post(self,request):
         emp = request.data
         if Project.objects.filter(companyLeader=request.user.id).exists():
@@ -488,7 +494,7 @@ class AddUser(APIView):
             return Response({"message":"success"})
             
 class EmployeeListView(generics.ListAPIView):
-    # permission_classes = [IsCompanyLead]
+    permission_classes = [IsAuthenticated]
     serializer_class = EmployeeForListSerializer
     
     def get_queryset(self):
@@ -501,7 +507,7 @@ class EmployeeListView(generics.ListAPIView):
         return queryset
     
 class EmployeeSingleView(generics.RetrieveAPIView):
-    # permission_classes = [IsCompanyLead]
+    permission_classes = [IsAuthenticated]
     queryset = Employee.objects.all()
     serializer_class = EmployeeForUserListPageSerializer
     lookup_field = 'id'
@@ -509,16 +515,20 @@ class EmployeeSingleView(generics.RetrieveAPIView):
     
     
 class EmployeePageView(APIView):
-  
+    permission_classes = [IsAuthenticated]
     
     def get(self,request):
-        queryset = Employee.objects.get(user = self.request.user.id)
-        serializer = EmployeeForUserListPageSerializer
-        employee = serializer(queryset)
-        return Response(employee.data)
+        if Employee.objects.filter(user = self.request.user.id):    
+            queryset = Employee.objects.get(user = self.request.user.id)
+            serializer = EmployeeForUserListPageSerializer
+            employee = serializer(queryset)
+            return Response(employee.data)
+        return Response(status=401)
+    
     
     
 class PositionSelect(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
     # permission_classes = [IsCompanyLead]
     serializer_class = DepartmentPositionSerializer
     
@@ -536,6 +546,7 @@ class PositionSelect(generics.ListAPIView):
 
 
 class UserChange(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
     queryset = User.objects.all()
     serializer_class = UserSerializer
     lookup_field = "id"
@@ -561,6 +572,7 @@ class UserChange(generics.UpdateAPIView):
 
 
 class ChangePPView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
 
         data = request.data
@@ -578,17 +590,14 @@ class ChangePPView(APIView):
             return Response(image_serializer.errors)
         
 class HomePageView(generics.ListAPIView):
-   
+
     serializer_class = HomePageSerializer
     
     def get_queryset(self):
+        print('3333')
         instance = []
         empexs = Employee.objects.filter(user = self.request.user).exists()
-        print("b") 
-
-        
         if empexs:
-           
             instance = [self.request.user.employee.project]
 
         if empexs:

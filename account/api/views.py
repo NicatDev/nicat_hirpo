@@ -6,7 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from account.utils import *
 from account.models import *
 from rest_framework.views import APIView
-from account.api.permissions import IsCompanyLead
+from account.api.permissions import IsCompanyLead,HasEmployeeOrNot
 User = get_user_model()
 
 class LoginView(APIView):
