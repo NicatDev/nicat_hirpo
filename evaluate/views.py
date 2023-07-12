@@ -41,9 +41,10 @@ class Frequencies(generics.ListAPIView):
             if Project.objects.filter(companyLeader=data).exists():
                 project_id=Project.objects.get(companyLeader=data).id
              
-            else:
+            elif Project.objects.get(employee = self.request.user.employee.id).exists():
                 project_id = Project.objects.get(employee = self.request.user.employee.id).id
-       
+            else:
+                return []
             return queryset.filter(period__project_id = project_id)
         
 class AddPeriodApiView(generics.CreateAPIView):
