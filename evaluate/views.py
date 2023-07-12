@@ -41,7 +41,7 @@ class Frequencies(generics.ListAPIView):
             if Project.objects.filter(companyLeader=data).exists():
                 project_id=Project.objects.get(companyLeader=data).id
              
-            elif Project.objects.get(employee = self.request.user.employee.id).exists():
+            elif Project.objects.filter(employee = self.request.user.employee.id).exists():
                 project_id = Project.objects.get(employee = self.request.user.employee.id).id
             else:
                 return []
