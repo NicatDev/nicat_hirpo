@@ -19,8 +19,19 @@ class UserListView(generics.ListAPIView):
   
     queryset = Employee.objects.all()
     serializer_class = EmployeesallSerializer
-    
 
+class CreateProjectWithoutWizardView(generics.CreateAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+
+    def post(self,request):
+        data = request.data
+        data['companyLeader'] = request.user.id
+        project = self.get_serializer(data=data)
+        project.is_valid(raise_exception=True)
+        project.save()
+        return Response({"message":"success"},status=201)
+    
 class CreateProjectView(APIView):
 
     def post(self,request,format=None):
