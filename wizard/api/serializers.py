@@ -83,9 +83,15 @@ class ProjectDepartmentSerializer(serializers.ModelSerializer):
         ceouser = obj.project.companyLeader
         if Employee.objects.filter(user=ceouser.id).exists():
             ceo = Employee.objects.get(user=ceouser.id)
+      
             full_name = ceo.first_name + " " + ceo.last_name
-        return {"ceo_name":full_name}
- 
+            return {"ceo_name":full_name}
+        else:
+            return {"ceo_name":"None"}
+                
+            
+            
+      
 class DepartmentLLLSerializer(serializers.ModelSerializer):
   
     class Meta:
